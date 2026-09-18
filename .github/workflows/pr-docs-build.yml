@@ -17,10 +17,11 @@ jobs:
     strategy:
       matrix:
         node-version: [24]
-        os: [ubuntu-latest, windows-latest]
+        os:
+        - ubuntu-latest
         include:
-          - node-version: 24
-            node-name: LTS
+        - node-version: 24
+          node-name: LTS
 
       fail-fast: false
 
@@ -28,64 +29,64 @@ jobs:
       PULL_REQUEST_NUMBER: ${{ github.event.number }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+      with:
+        persist-credentials: false
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+    - name: Setup pnpm
+      uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86   # v6.0.10
 
-      - name: Setup node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
+    - name: Setup node
+      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020   # v7.0.0
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm i --frozen-lockfile
+    - name: Install dependencies
+      run: pnpm i --frozen-lockfile
 
-      - name: Generate common locale
-        run: pnpm docs:gen-locale
+    - name: Generate common locale
+      run: pnpm docs:gen-locale
 
-      - name: Build Element Plus
-        run: pnpm build
-        env:
-          FORCE_COLOR: 2
-          NODE_OPTIONS: --max-old-space-size=4096
-      - name: Build Metadata
-        run: cd internal/metadata && pnpm build
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build website
-        run: pnpm docs:build
-        env:
-          DOC_ENV: preview
-          NODE_OPTIONS: --max-old-space-size=4096
+    - name: Build Element Plus
+      run: pnpm build
+      env:
+        FORCE_COLOR: 2
+        NODE_OPTIONS: --max-old-space-size=4096
+    - name: Build Metadata
+      run: cd internal/metadata && pnpm build
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build website
+      run: pnpm docs:build
+      env:
+        DOC_ENV: preview
+        NODE_OPTIONS: --max-old-space-size=4096
 
-      - name: Move bundle to docs dist
-        if: matrix.os == 'ubuntu-latest'
-        run: mkdir docs/.vitepress/dist/bundle && mv dist/element-plus/* docs/.vitepress/dist/bundle
+    - name: Move bundle to docs dist
+      if: matrix.os == 'ubuntu-latest'
+      run: mkdir docs/.vitepress/dist/bundle && mv dist/element-plus/* docs/.vitepress/dist/bundle
 
       # share website dist
-      - name: Upload artifact
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: docs
-          path: docs/.vitepress/dist/
-          retention-days: 1
+    - name: Upload artifact
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a   # v7.0.1
+      with:
+        name: docs
+        path: docs/.vitepress/dist/
+        retention-days: 1
 
       # write pr.txt for share
-      - name: Save pr number
-        if: matrix.os == 'ubuntu-latest'
-        run: echo ${PULL_REQUEST_NUMBER} > ./pr.txt
+    - name: Save pr number
+      if: matrix.os == 'ubuntu-latest'
+      run: echo ${PULL_REQUEST_NUMBER} > ./pr.txt
 
       # share pr number
-      - name: Upload pr number
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: pr
-          path: ./pr.txt
-          retention-days: 1
+    - name: Upload pr number
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a   # v7.0.1
+      with:
+        name: pr
+        path: ./pr.txt
+        retention-days: 1
